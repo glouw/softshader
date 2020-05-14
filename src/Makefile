@@ -6,8 +6,11 @@ LDFLAGS = -lSDL2 -lpthread
 
 DEPS = softshader.hh Makefile
 
-../tunnel: tunnel.cc $(DEPS)
-	$(CC) $(CFLAGS) $(LDFLAGS) $< -o $@
+all: ../tunnel ../creation
+
+../tunnel:   tunnel.cc   $(DEPS); $(CC) $(CFLAGS) $(LDFLAGS) $< -o $@
+../creation: creation.cc $(DEPS); $(CC) $(CFLAGS) $(LDFLAGS) $< -o $@
 
 clean:
 	rm ../tunnel
+	rm ../creation

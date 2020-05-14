@@ -9,8 +9,6 @@
 
 namespace softshader {
 
-using Shade = uint32_t (*)(const int x, const int y);
-
 const auto xres = 768;
 const auto yres = 432;
 
@@ -34,6 +32,7 @@ inline float clamp(float v, float lo, float hi)
 struct V2 {
     float x {};
     float y {};
+    V2() {}
     V2(float x, float y)
         : x { x }
         , y { y }
@@ -47,6 +46,15 @@ struct V2 {
     V2 operator-(float f) const { return V2 { x - f, y - f }; }
     V2 operator*(float f) const { return V2 { x * f, y * f }; }
     V2 operator/(float f) const { return V2 { x / f, y / f }; }
+    V2& operator-=(float f) { x -= f; y -= f; return *this; }
+    V2& operator+=(float f) { x += f; y += f; return *this; }
+    V2& operator*=(float f) { x *= f; y *= f; return *this; }
+    V2& operator/=(float f) { x /= f; y /= f; return *this; }
+    V2& operator-=(V2 v) { x -= v.x; y -= v.y; return *this; }
+    V2& operator+=(V2 v) { x += v.x; y += v.y; return *this; }
+    V2& operator*=(V2 v) { x *= v.x; y *= v.y; return *this; }
+    V2& operator/=(V2 v) { x /= v.x; y /= v.y; return *this; }
+    float& operator[](int i) { return (i == 0) ? x : y; }
     void print() const
     {
         std::printf("%f %f\n", (double)x, (double)y);
@@ -59,24 +67,34 @@ struct V3 {
     float x {};
     float y {};
     float z {};
+    V3() {}
     V3(float x, float y, float z)
         : x { x }
         , y { y }
         , z { z }
     {
     }
-    V3 operator+(V3 v) const { return V3 { x + v.x, y + v.y, z + v.z }; }
-    V3 operator-(V3 v) const { return V3 { x - v.x, y - v.y, z - v.z }; }
-    V3 operator*(V3 v) const { return V3 { x * v.x, y * v.y, z * v.z }; }
-    V3 operator/(V3 v) const { return V3 { x / v.x, y / v.y, z / v.z }; }
-    V3 operator+(V2 v) const { return V3 { x + v.x, y + v.y, z }; }
-    V3 operator-(V2 v) const { return V3 { x - v.x, y - v.y, z }; }
-    V3 operator*(V2 v) const { return V3 { x * v.x, y * v.y, z }; }
-    V3 operator/(V2 v) const { return V3 { x / v.x, y / v.y, z }; }
-    V3 operator+(float f) const { return V3 { x + f, y + f, z + f }; }
-    V3 operator-(float f) const { return V3 { x - f, y - f, z - f }; }
-    V3 operator*(float f) const { return V3 { x * f, y * f, z * f }; }
-    V3 operator/(float f) const { return V3 { x / f, y / f, z / f }; }
+    V3  operator+(V3 v) const { return V3 { x + v.x, y + v.y, z + v.z }; }
+    V3  operator-(V3 v) const { return V3 { x - v.x, y - v.y, z - v.z }; }
+    V3  operator*(V3 v) const { return V3 { x * v.x, y * v.y, z * v.z }; }
+    V3  operator/(V3 v) const { return V3 { x / v.x, y / v.y, z / v.z }; }
+    V3  operator+(V2 v) const { return V3 { x + v.x, y + v.y, z }; }
+    V3  operator-(V2 v) const { return V3 { x - v.x, y - v.y, z }; }
+    V3  operator*(V2 v) const { return V3 { x * v.x, y * v.y, z }; }
+    V3  operator/(V2 v) const { return V3 { x / v.x, y / v.y, z }; }
+    V3  operator+(float f) const { return V3 { x + f, y + f, z + f }; }
+    V3  operator-(float f) const { return V3 { x - f, y - f, z - f }; }
+    V3  operator*(float f) const { return V3 { x * f, y * f, z * f }; }
+    V3  operator/(float f) const { return V3 { x / f, y / f, z / f }; }
+    V3& operator-=(float f) { x -= f; y -= f; z -= f; return *this; }
+    V3& operator+=(float f) { x += f; y += f; z += f; return *this; }
+    V3& operator*=(float f) { x *= f; y *= f; z *= f; return *this; }
+    V3& operator/=(float f) { x /= f; y /= f; z /= f; return *this; }
+    V3& operator-=(V3 v) { x -= v.x; y -= v.y; z -= v.z; return *this; }
+    V3& operator+=(V3 v) { x += v.x; y += v.y; z += v.z; return *this; }
+    V3& operator*=(V3 v) { x *= v.x; y *= v.y; z *= v.z; return *this; }
+    V3& operator/=(V3 v) { x /= v.x; y /= v.y; z /= v.z; return *this; }
+    float& operator[](int i) { return (i == 0) ? x : (i == 1) ? y : z; }
     uint32_t color(float a) const
     {
         // clang-format off
@@ -92,10 +110,26 @@ struct V3 {
 
 namespace trig {
     constexpr auto PI = std::acos(-1.0f);
-    inline V2 cos(V2 v) { return V2 { std::cos(v.x), std::cos(v.y) }; }
+    // SIN.
+    inline float sin(float a) { return std::sin(a); }
     inline V2 sin(V2 v) { return V2 { std::sin(v.x), std::sin(v.y) }; }
-    inline V3 cos(V3 v) { return V3 { std::cos(v.x), std::cos(v.y), std::cos(v.z) }; }
     inline V3 sin(V3 v) { return V3 { std::sin(v.x), std::sin(v.y), std::sin(v.z) }; }
+    // COS.
+    inline float cos(float a) { return std::cos(a); }
+    inline V2 cos(V2 v) { return V2 { std::cos(v.x), std::cos(v.y) }; }
+    inline V3 cos(V3 v) { return V3 { std::cos(v.x), std::cos(v.y), std::cos(v.z) }; }
+    // LENGTH.
+    inline float length(float f) { return f; }
+    inline float length(V2 v) { return std::sqrt(v.x * v.x + v.y * v.y); }
+    inline float length(V3 v) { return std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z); }
+    // ABS.
+    inline float abs(float a) { return std::fabs(a); }
+    inline V2 abs(V2 v) { return V2 { std::fabs(v.x), std::fabs(v.y) }; }
+    inline V3 abs(V3 v) { return V3 { std::fabs(v.x), std::fabs(v.y), std::fabs(v.z) }; }
+    // MOD.
+    inline float mod(float x, float y) { return x - y * std::floor(x / y); }
+    inline V2 mod(V2 v, float f) { return V2 { mod(v.x, f), mod(v.y, f) }; }
+    inline V3 mod(V3 v, float f) { return V3 { mod(v.x, f), mod(v.y, f), mod(v.z, f) }; }
 }
 
 class Video {
@@ -179,6 +213,8 @@ public:
     }
 };
 
+using Shade = uint32_t (*)(const V2);
+
 struct Needle {
     Vram& vram;
     const Shade shade {};
@@ -195,7 +231,10 @@ struct Needle {
     {
         for (int y = y0; y < y1; y++)
             for (int x = 0; x < xres; x++)
-                vram.put(x, y, shade(x, y));
+            {
+                const auto coord = V2 { float(x), float(y) };
+                vram.put(x, y, shade(coord));
+            }
     }
 };
 
