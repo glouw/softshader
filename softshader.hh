@@ -153,7 +153,45 @@ namespace softshader
         }
     };
 
-    void run(void (*render)(Vram& vram))
+    typedef uint32_t (*Shade)(const int x, const int y, const int xres, const int yres);
+
+    struct Needle
+    {
+        Vram& vram;
+        Shade shade{};
+        int y0{};
+        int y1{};
+
+        Needle(Vram& vram, Shade shade, int y0, int y1): vram{vram}, shade{shade}, y0{y0}, y1{y1} {}
+
+        void operator()()
+        {
+            const auto xres = vram.xres;
+            const auto yres = vram.yres;
+            for(int y = y0; y <   y1; y++)
+            for(int x =  0; x < xres; x++)
+            {
+                const auto color = shade(x, y, xres, yres);
+                vram.put(x, y, color);
+            }
+        }
+    };
+
+    void render(Vram& vram, Shade shade)
+    {
+        auto ends = std::vector<int>();
+        const auto tasks = 4;
+        const auto width = vram.yres / tasks;
+        for(int i = 0; i < tasks + 1; i++)
+            ends.push_back(i * width);
+        auto threads = std::vector<std::thread>();
+        for(int i = 0; i < tasks; i++)
+            threads.push_back(std::thread{Needle{vram, shade, ends[i], ends[i + 1]}});
+        for(int i = 0; i < tasks; i++)
+            threads[i].join();
+    }
+
+    void run(Shade shade)
     {
         auto video = Video{768, 432};
         auto vram = Vram{video.xres, video.yres};
@@ -161,11 +199,14 @@ namespace softshader
         {
             vram.lock(video.texture);
             const auto t0 = SDL_GetTicks();
-            render(vram);
+            render(vram, shade);
             const auto t1 = SDL_GetTicks();
             vram.unlock();
             video.render();
-            const int ms = 15 - (t1 - t0);
+            const int dt = t1 - t0;
+            const auto ms = 15 - dt;
+            const auto fps = 1000.0 / dt;
+            std::printf("fps: %f\n", fps);
             if(ms > 0)
                 SDL_Delay(ms); // FOR 144HZ MONITORS OR IF VSYNC FAILS.
         }
