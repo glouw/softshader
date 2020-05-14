@@ -6,5 +6,13 @@ for the sake of learning a couple new C++ features.
 I chose to go the software renderer route because seeing
 GPU shaders done in software is somewhat pretty cool.
 
-Tunnel:
+## Building
+
+    pacman -S sdl2
+    make
+
+Then, run any of the binaries built:
+
+    ./tunnel
+
 ![](pic/tunnel)

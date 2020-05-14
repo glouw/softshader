@@ -1,3 +1,5 @@
+// ORIGINAL AUTHOR: Inigo Quilez (shadertoy.com/user/iq)
+
 #include "softshader.hh"
 
 using namespace softshader;
