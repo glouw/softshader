@@ -7,6 +7,14 @@
 #include <vector>
 
 namespace softshader {
+
+float clamp(float v, float lo, float hi)
+{
+    return v > hi ? hi : v < lo ? lo : v;
+}
+
+typedef uint32_t (*Shade)(const int x, const int y, const int xres, const int yres);
+
 struct V2 {
     float x;
     float y;
@@ -54,17 +62,13 @@ struct V3 {
     uint32_t color(float a) const
     {
         return (uint8_t(clamp(a, 0.f, 1.f) * 0xFF) << 24)
-             | (uint8_t(clamp(x, 0.f, 1.f) * 0xFF) << 16)
-             | (uint8_t(clamp(y, 0.f, 1.f) * 0xFF) <<  8)
-             | (uint8_t(clamp(z, 0.f, 1.f) * 0xFF) <<  0);
+            | (uint8_t(clamp(x, 0.f, 1.f) * 0xFF) << 16)
+            | (uint8_t(clamp(y, 0.f, 1.f) * 0xFF) << 8)
+            | (uint8_t(clamp(z, 0.f, 1.f) * 0xFF) << 0);
     }
     void print() const
     {
         std::printf("%f %f %f\n", (double)x, (double)y, (double)z);
-    }
-    float clamp(float v, float lo, float hi) const
-    {
-        return v > hi ? hi : v < lo ? lo : v;
     }
 };
 
@@ -178,8 +182,6 @@ public:
             done = true;
     }
 };
-
-typedef uint32_t (*Shade)(const int x, const int y, const int xres, const int yres);
 
 struct Needle {
     Vram& vram;
