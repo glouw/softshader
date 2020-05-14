@@ -17,7 +17,10 @@ static uint32_t shade(const ss::V2 coord)
         z += 0.07f;
         l = ss::trig::length(p);
         uv += p / l * (std::sin(z) + 1.f) * ss::trig::abs(std::sin(l * 9.f - z * 2.f));
-        c[i] = .01f / ss::trig::length(ss::trig::abs(ss::trig::mod(uv, 1.f) - 0.5f));
+        const auto a = ss::trig::mod(uv, 1.f) - 0.5f;
+        const auto b = ss::trig::abs(a);
+        const auto cc = ss::trig::length(b);
+        c[i] = cc == 0.f ? 1.0f : .01f / cc;
     }
     const auto v = c / l;
     return v.color(ss::uptime());
