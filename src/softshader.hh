@@ -1,11 +1,11 @@
 #pragma once
 
 #include <SDL2/SDL.h>
+#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <thread>
 #include <vector>
-#include <chrono>
 
 namespace softshader {
 
@@ -32,8 +32,8 @@ inline float clamp(float v, float lo, float hi)
 }
 
 struct V2 {
-    float x { };
-    float y { };
+    float x {};
+    float y {};
     V2(float x, float y)
         : x { x }
         , y { y }
@@ -56,9 +56,9 @@ struct V2 {
 const auto res = V2 { float(xres), float(yres) };
 
 struct V3 {
-    float x { };
-    float y { };
-    float z { };
+    float x {};
+    float y {};
+    float z {};
     V3(float x, float y, float z)
         : x { x }
         , y { y }
@@ -79,10 +79,10 @@ struct V3 {
     V3 operator/(float f) const { return V3 { x / f, y / f, z / f }; }
     uint32_t color(float a) const
     {
-        return (uint8_t(clamp(a, 0.f, 1.f) * 0xFF) << 24)
-             | (uint8_t(clamp(x, 0.f, 1.f) * 0xFF) << 16)
-             | (uint8_t(clamp(y, 0.f, 1.f) * 0xFF) <<  8)
-             | (uint8_t(clamp(z, 0.f, 1.f) * 0xFF) <<  0);
+        // clang-format off
+        return (uint8_t(clamp(a, 0.f, 1.f) * 0xFF) << 24) | (uint8_t(clamp(x, 0.f, 1.f) * 0xFF) << 16)
+             | (uint8_t(clamp(y, 0.f, 1.f) * 0xFF) <<  8) | (uint8_t(clamp(z, 0.f, 1.f) * 0xFF) <<  0);
+        // clang-format on
     }
     void print() const
     {
