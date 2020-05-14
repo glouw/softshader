@@ -6,10 +6,11 @@ namespace ss = softshader;
 
 static uint32_t shade(const ss::V2 coord)
 {
-    auto c = ss::V3{};
+    auto c = ss::V3 {};
     auto l = float {};
     auto z = ss::uptime();
-    for(int i = 0; i < 3; i++) {
+    for(int i = 0; i < 3; i++)
+    {
         auto p = coord / ss::res;
         auto uv = p;
         p -= 0.5f;
