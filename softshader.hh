@@ -118,7 +118,14 @@ namespace softshader
     public:
         const int xres{};
         const int yres{};
-        Vram(int xres, int yres): xres{xres}, yres{yres} {}
+        std::vector<int> channels{};
+        const int tasks{};
+        Vram(int xres, int yres): xres{xres}, yres{yres}, tasks{SDL_GetCPUCount()}
+        {
+            const auto width = yres / tasks;
+            for(int i = 0; i < tasks + 1; i++)
+                channels.push_back(i * width);
+        }
 
         void put(int x, int y, uint32_t color)
         {
@@ -163,9 +170,7 @@ namespace softshader
         Shade shade{};
         int y0{};
         int y1{};
-
         Needle(Vram& vram, Shade shade, int y0, int y1): vram{vram}, shade{shade}, y0{y0}, y1{y1} {}
-
         void operator()()
         {
             const auto xres = vram.xres;
@@ -179,18 +184,16 @@ namespace softshader
         }
     };
 
-    void render(Vram& vram, Shade shade)
+    void draw(Vram& vram, Shade shade)
     {
-        auto ends = std::vector<int>();
-        const auto tasks = SDL_GetCPUCount();
-        const auto width = vram.yres / tasks;
-        for(int i = 0; i < tasks + 1; i++)
-            ends.push_back(i * width);
         auto threads = std::vector<std::thread>();
-        for(int i = 0; i < tasks; i++)
-            threads.push_back(std::thread{Needle{vram, shade, ends[i], ends[i + 1]}});
-        for(int i = 0; i < tasks; i++)
-            threads[i].join();
+        for(int i = 0; i < vram.tasks; i++)
+        {
+            const auto needle = Needle{vram, shade, vram.channels[i], vram.channels[i + 1]};
+            threads.push_back(std::thread{needle});
+        }
+        for(auto& thread : threads)
+            thread.join();
     }
 
     void run(Shade shade)
@@ -201,7 +204,7 @@ namespace softshader
         {
             vram.lock(video.texture);
             const auto t0 = SDL_GetTicks();
-            render(vram, shade);
+            draw(vram, shade);
             const auto t1 = SDL_GetTicks();
             vram.unlock();
             video.render();
