@@ -2,6 +2,8 @@
 
 #include <cstdio>
 #include <cmath>
+#include <thread>
+#include <vector>
 #include <SDL2/SDL.h>
 
 namespace softshader
@@ -180,7 +182,7 @@ namespace softshader
     void render(Vram& vram, Shade shade)
     {
         auto ends = std::vector<int>();
-        const auto tasks = 4;
+        const auto tasks = SDL_GetCPUCount();
         const auto width = vram.yres / tasks;
         for(int i = 0; i < tasks + 1; i++)
             ends.push_back(i * width);

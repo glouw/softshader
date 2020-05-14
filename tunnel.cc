@@ -1,8 +1,5 @@
 // ORIGINAL AUTHOR: Inigo Quilez (shadertoy.com/user/iq)
 
-#include <thread>
-#include <vector>
-
 #include "softshader.hh"
 
 using namespace softshader;
