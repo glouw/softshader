@@ -2,10 +2,12 @@ CC = g++ --std=c++17
 
 CFLAGS = -Ofast -march=native -Wall -Wextra -Wpedantic -Wdouble-promotion
 
-LIBS = -lSDL2 -lpthread
+LDFLAGS = -lSDL2 -lpthread
 
-../tunnel: tunnel.cc softshader.hh Makefile
-	$(CC) $(CFLAGS) $(LIBS) $< -o $@
+DEPS = softshader.hh Makefile
+
+../tunnel: tunnel.cc $(DEPS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $< -o $@
 
 clean:
 	rm ../tunnel
