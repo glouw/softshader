@@ -258,6 +258,7 @@ void run(Shade shade)
 {
     auto video = Video {};
     auto vram = Vram {};
+    auto cycles = int {};
     for (auto input = Input {}; !input.done; input.update()) {
         tick();
         vram.lock(video.texture);
@@ -266,8 +267,12 @@ void run(Shade shade)
         const auto t1 = std::chrono::high_resolution_clock::now();
         vram.unlock();
         video.render();
-        std::chrono::duration<double> dt = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-        std::printf("draw fps: %f\n", 1.0 / dt.count());
+        if(cycles % 10 == 0)
+        {
+            std::chrono::duration<double> dt = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+            std::printf("draw fps: %f\n", 1.0 / dt.count());
+        }
+        cycles += 1;
     }
 }
 }

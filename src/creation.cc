@@ -7,8 +7,8 @@ namespace ss = softshader;
 static uint32_t shade(const ss::V2 coord)
 {
     auto c = ss::V3{};
-    float l {};
-    float z = ss::uptime();
+    auto l = float {};
+    auto z = ss::uptime();
     for(int i = 0; i < 3; i++) {
         auto p = coord / ss::res;
         auto uv = p;
