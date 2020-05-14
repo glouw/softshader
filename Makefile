@@ -1,6 +1,6 @@
 CC = g++ --std=c++17
 
-CFLAGS = -Ofast -march=native -Wall -Wextra -Wpedantic -Wdouble-promotion
+CFLAGS = -flto -Ofast -march=native -Wall -Wextra -Wpedantic -Wdouble-promotion
 
 LIBS = -lSDL2
 

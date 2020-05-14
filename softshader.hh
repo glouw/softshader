@@ -73,7 +73,7 @@ namespace softshader
         Video(int xres, int yres): xres{xres}, yres{yres}
         {
             window = SDL_CreateWindow(
-                "DEMO",
+                "SOFT SHADER",
                 SDL_WINDOWPOS_UNDEFINED,
                 SDL_WINDOWPOS_UNDEFINED,
                 xres,
@@ -157,9 +157,14 @@ namespace softshader
         for(auto input = Input{}; !input.done; input.update())
         {
             vram.lock(video.texture);
+            const auto t0 = SDL_GetTicks();
             render(vram);
+            const auto t1 = SDL_GetTicks();
             vram.unlock();
             video.render();
+            const int ms = 15 - (t1 - t0);
+            if(ms > 0)
+                SDL_Delay(ms); // FOR 144HZ MONITORS OR IF VSYNC FAILS.
         }
     }
 }
