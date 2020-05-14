@@ -10,9 +10,6 @@ namespace softshader
     {
         float x;
         float y;
-        void print() const {
-            std::printf("%f %f\n", (double) x, (double) y);
-        }
         V2(float x, float y): x{x}, y{y} {}
         V2 operator+(V2 v)    const { return V2{x + v.x, y + v.y }; }
         V2 operator-(V2 v)    const { return V2{x - v.x, y - v.y }; }
@@ -22,6 +19,9 @@ namespace softshader
         V2 operator-(float f) const { return V2{x - f,   y - f   }; }
         V2 operator*(float f) const { return V2{x * f,   y * f   }; }
         V2 operator/(float f) const { return V2{x / f,   y / f   }; }
+        void print() const {
+            std::printf("%f %f\n", (double) x, (double) y);
+        }
     };
 
     struct V3
@@ -29,9 +29,6 @@ namespace softshader
         float x;
         float y;
         float z;
-        void print() const {
-            std::printf("%f %f %f\n", (double) x, (double) y, (double) z);
-        }
         V3(float x, float y, float z): x{x}, y{y}, z{z} {}
         V3 operator+(V3 v)      const { return V3{x + v.x, y + v.y, z + v.z }; }
         V3 operator-(V3 v)      const { return V3{x - v.x, y - v.y, z - v.z }; }
@@ -46,10 +43,16 @@ namespace softshader
         V3 operator*(float f)   const { return V3{x * f,   y * f,   z * f   }; }
         V3 operator/(float f)   const { return V3{x / f,   y / f,   z / f   }; }
         uint32_t color(float a) const {
-            return (uint8_t(a * 0xFF) << 24)
-                 | (uint8_t(x * 0xFF) << 16)
-                 | (uint8_t(y * 0xFF) <<  8)
-                 | (uint8_t(z * 0xFF) <<  0);
+            return (uint8_t(clamp(a, 0.f, 1.f) * 0xFF) << 24)
+                 | (uint8_t(clamp(x, 0.f, 1.f) * 0xFF) << 16)
+                 | (uint8_t(clamp(y, 0.f, 1.f) * 0xFF) <<  8)
+                 | (uint8_t(clamp(z, 0.f, 1.f) * 0xFF) <<  0);
+        }
+        void print() const {
+            std::printf("%f %f %f\n", (double) x, (double) y, (double) z);
+        }
+        float clamp(float v, float lo, float hi) const {
+            return v > hi ? hi : v < lo ? lo : v;
         }
     };
 
@@ -152,7 +155,7 @@ namespace softshader
 
     void run(void (*render)(Vram& vram))
     {
-        auto video = Video{600, 600};
+        auto video = Video{768, 432};
         auto vram = Vram{video.xres, video.yres};
         for(auto input = Input{}; !input.done; input.update())
         {
