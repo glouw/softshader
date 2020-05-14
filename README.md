@@ -15,4 +15,4 @@ Then, run any of the binaries built:
 
     ./tunnel
 
-![](pic/tunnel)
+![](pic/tunnel.png)
