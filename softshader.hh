@@ -5,19 +5,35 @@
 #include <cstdio>
 #include <thread>
 #include <vector>
+#include <chrono>
 
 namespace softshader {
 
-float clamp(float v, float lo, float hi)
+using Shade = uint32_t (*)(const int x, const int y);
+
+const auto xres = 768;
+const auto yres = 432;
+
+auto time = 0.f;
+
+inline void tick()
+{
+    time = SDL_GetTicks() * 0.001f;
+}
+
+inline float uptime()
+{
+    return time;
+}
+
+inline float clamp(float v, float lo, float hi)
 {
     return v > hi ? hi : v < lo ? lo : v;
 }
 
-typedef uint32_t (*Shade)(const int x, const int y, const int xres, const int yres);
-
 struct V2 {
-    float x;
-    float y;
+    float x { };
+    float y { };
     V2(float x, float y)
         : x { x }
         , y { y }
@@ -37,10 +53,12 @@ struct V2 {
     }
 };
 
+const auto res = V2 { float(xres), float(yres) };
+
 struct V3 {
-    float x;
-    float y;
-    float z;
+    float x { };
+    float y { };
+    float z { };
     V3(float x, float y, float z)
         : x { x }
         , y { y }
@@ -62,9 +80,9 @@ struct V3 {
     uint32_t color(float a) const
     {
         return (uint8_t(clamp(a, 0.f, 1.f) * 0xFF) << 24)
-            | (uint8_t(clamp(x, 0.f, 1.f) * 0xFF) << 16)
-            | (uint8_t(clamp(y, 0.f, 1.f) * 0xFF) << 8)
-            | (uint8_t(clamp(z, 0.f, 1.f) * 0xFF) << 0);
+             | (uint8_t(clamp(x, 0.f, 1.f) * 0xFF) << 16)
+             | (uint8_t(clamp(y, 0.f, 1.f) * 0xFF) <<  8)
+             | (uint8_t(clamp(z, 0.f, 1.f) * 0xFF) <<  0);
     }
     void print() const
     {
@@ -74,10 +92,10 @@ struct V3 {
 
 namespace trig {
     constexpr auto PI = std::acos(-1.0f);
-    V2 cos(V2 v) { return V2 { std::cos(v.x), std::cos(v.y) }; }
-    V2 sin(V2 v) { return V2 { std::sin(v.x), std::sin(v.y) }; }
-    V3 cos(V3 v) { return V3 { std::cos(v.x), std::cos(v.y), std::cos(v.z) }; }
-    V3 sin(V3 v) { return V3 { std::sin(v.x), std::sin(v.y), std::sin(v.z) }; }
+    inline V2 cos(V2 v) { return V2 { std::cos(v.x), std::cos(v.y) }; }
+    inline V2 sin(V2 v) { return V2 { std::sin(v.x), std::sin(v.y) }; }
+    inline V3 cos(V3 v) { return V3 { std::cos(v.x), std::cos(v.y), std::cos(v.z) }; }
+    inline V3 sin(V3 v) { return V3 { std::sin(v.x), std::sin(v.y), std::sin(v.z) }; }
 }
 
 class Video {
@@ -86,29 +104,11 @@ class Video {
 
 public:
     SDL_Texture* texture {};
-    const int xres {};
-    const int yres {};
-    Video(int xres, int yres)
-        : xres { xres }
-        , yres { yres }
+    Video()
     {
-        window = SDL_CreateWindow(
-            "SOFT SHADER",
-            SDL_WINDOWPOS_UNDEFINED,
-            SDL_WINDOWPOS_UNDEFINED,
-            xres,
-            yres,
-            SDL_WINDOW_SHOWN);
-        renderer = SDL_CreateRenderer(
-            window,
-            -1,
-            SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-        texture = SDL_CreateTexture(
-            renderer,
-            SDL_PIXELFORMAT_ARGB8888,
-            SDL_TEXTUREACCESS_STREAMING,
-            xres,
-            yres);
+        window = SDL_CreateWindow("SOFTSHADER", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, xres, yres, SDL_WINDOW_SHOWN);
+        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+        texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, xres, yres);
     }
 
     void render()
@@ -131,18 +131,14 @@ class Vram {
     SDL_Texture* texture {};
 
 public:
-    const int xres {};
-    const int yres {};
-    std::vector<int> channels {};
+    std::vector<int> slices {};
     const int tasks {};
-    Vram(int xres, int yres)
-        : xres { xres }
-        , yres { yres }
-        , tasks { SDL_GetCPUCount() }
+    Vram()
+        : tasks { SDL_GetCPUCount() }
     {
         const auto width = yres / tasks;
         for (int i = 0; i < tasks + 1; i++)
-            channels.push_back(i * width);
+            slices.push_back(i * width);
     }
 
     void put(int x, int y, uint32_t color)
@@ -197,13 +193,9 @@ struct Needle {
     }
     void operator()()
     {
-        const auto xres = vram.xres;
-        const auto yres = vram.yres;
         for (int y = y0; y < y1; y++)
-            for (int x = 0; x < xres; x++) {
-                const auto color = shade(x, y, xres, yres);
-                vram.put(x, y, color);
-            }
+            for (int x = 0; x < xres; x++)
+                vram.put(x, y, shade(x, y));
     }
 };
 
@@ -211,7 +203,12 @@ void draw(Vram& vram, Shade shade)
 {
     auto threads = std::vector<std::thread>();
     for (int i = 0; i < vram.tasks; i++) {
-        const auto needle = Needle { vram, shade, vram.channels[i], vram.channels[i + 1] };
+        const auto needle = Needle {
+            vram,
+            shade,
+            vram.slices[i + 0], // MULTITHREADS RENDER WITH HORIZONTAL SLICES.
+            vram.slices[i + 1],
+        };
         threads.push_back(std::thread { needle });
     }
     for (auto& thread : threads)
@@ -220,21 +217,18 @@ void draw(Vram& vram, Shade shade)
 
 void run(Shade shade)
 {
-    auto video = Video { 768, 432 };
-    auto vram = Vram { video.xres, video.yres };
+    auto video = Video {};
+    auto vram = Vram {};
     for (auto input = Input {}; !input.done; input.update()) {
+        tick();
         vram.lock(video.texture);
-        const auto t0 = SDL_GetTicks();
+        const auto t0 = std::chrono::high_resolution_clock::now();
         draw(vram, shade);
-        const auto t1 = SDL_GetTicks();
+        const auto t1 = std::chrono::high_resolution_clock::now();
         vram.unlock();
         video.render();
-        const int dt = t1 - t0;
-        const auto ms = 15 - dt;
-        const auto fps = 1000.0 / dt;
-        std::printf("fps: %f\n", fps);
-        if (ms > 0)
-            SDL_Delay(ms); // FOR 144HZ MONITORS OR IF VSYNC FAILS.
+        std::chrono::duration<double> dt = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+        std::printf("draw fps: %f\n", 1.0 / dt.count());
     }
 }
 }
