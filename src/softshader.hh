@@ -181,9 +181,9 @@ public:
 
 struct Needle {
     Vram& vram;
-    Shade shade {};
-    int y0 {};
-    int y1 {};
+    const Shade shade {};
+    const int y0 {};
+    const int y1 {};
     Needle(Vram& vram, Shade shade, int y0, int y1)
         : vram { vram }
         , shade { shade }

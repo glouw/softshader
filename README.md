@@ -6,7 +6,7 @@ and emulates popular Shadertoy shaders multithreaded entirely in software using 
 ## Building
 
     sudo pacman -S sdl2 # or, eg. sudo apt-get intall libsdl2-dev
-    make
+    make -C src
 
 Then, run a shader of your choice.
 
