@@ -130,6 +130,10 @@ namespace trig {
     inline float mod(float x, float y) { return x - y * std::floor(x / y); }
     inline V2 mod(V2 v, float f) { return V2 { mod(v.x, f), mod(v.y, f) }; }
     inline V3 mod(V3 v, float f) { return V3 { mod(v.x, f), mod(v.y, f), mod(v.z, f) }; }
+    // ATAN2 (SIMPLE WRAPPER FOR NAMESPACING).
+    inline float atan2(float y, float x) { return std::atan2(y, x); }
+    // ATAN2 (SIMPLE WRAPPER FOR NAMESPACING).
+    inline float pow(float x, float n) { return std::pow(x, n); }
 }
 
 class Video {
