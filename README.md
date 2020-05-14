@@ -1,17 +1,14 @@
 # SOFT SHADER
 
-Soft Shader contains a few shadertoy ports to C++ / SDL2
-for the sake of learning a couple new C++ features.
-
-I chose to go the software renderer route because seeing
-GPU shaders done in software is somewhat pretty cool.
+Softshader obtains a 32 bit pointer to video memory using SDL2
+and emulates popular Shadertoy shaders multithreaded entirely in software using C++17.
 
 ## Building
 
-    pacman -S sdl2
+    sudo pacman -S sdl2 # or, eg. sudo apt-get intall libsdl2-dev
     make
 
-Then, run any of the binaries built:
+Then, run a shader of your choice.
 
     ./tunnel
 
