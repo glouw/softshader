@@ -385,12 +385,12 @@ class Vram
 
 public:
     std::vector<int> slices {};
-    const int tasks {};
+    const int cpus {};
     Vram()
-        : tasks { SDL_GetCPUCount() }
+        : cpus { SDL_GetCPUCount() }
     {
-        const auto width = yres / tasks;
-        for(int i = 0; i < tasks + 1; i++)
+        const auto width = yres / cpus;
+        for(int i = 0; i < cpus + 1; i++)
             slices.push_back(i * width);
     }
 
@@ -462,7 +462,7 @@ struct Needle
 void draw(Vram& vram, Shade shade)
 {
     auto threads = std::vector<std::thread>();
-    for(int i = 0; i < vram.tasks; i++)
+    for(int i = 0; i < vram.cpus; i++)
     {
         const auto needle = Needle {
             vram,
