@@ -12,4 +12,4 @@ Then, run a shader of your choice.
 
     ./tunnel
 
-![](pic/tunnel.png)
+![](img/tunnel.png)
