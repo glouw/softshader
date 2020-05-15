@@ -2,9 +2,6 @@
 
 #include "softshader.hh"
 
-namespace ss = softshader;
-namespace tr = ss::trig;
-
 static uint32_t shade(const ss::V2 coord)
 {
     const auto p = (ss::res * -1.f + coord * 2.f) / ss::res.y;

@@ -499,3 +499,6 @@ void run(Shade shade)
     }
 }
 }
+
+namespace ss = softshader;
+namespace tr = ss::trig;
