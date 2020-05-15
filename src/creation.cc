@@ -2,26 +2,25 @@
 
 #include "softshader.hh"
 
+#include <iostream>
+
 namespace ss = softshader;
+namespace tr = ss::trig;
 
 static uint32_t shade(const ss::V2 coord)
 {
+    const auto per = coord / ss::res;
     auto c = ss::V3 {};
     auto l = float {};
     auto z = ss::uptime();
     for(int i = 0; i < 3; i++)
     {
-        auto p = coord / ss::res;
-        auto uv = p;
-        p -= 0.5f;
-        p.x *= ss::res.x / ss::res.y;
+        const auto p = (per - 0.5f) * ss::V2 { ss::res.x / ss::res.y, 1.f };
+        l = tr::length(p);
         z += 0.07f;
-        l = ss::trig::length(p);
-        uv += p / l * (ss::trig::sin(z) + 1.f) * ss::trig::abs(ss::trig::sin(l * 9.f - z * 2.f));
-        const auto a = ss::trig::mod(uv, 1.f) - 0.5f;
-        const auto b = ss::trig::abs(a);
-        const auto cc = ss::trig::length(b);
-        c[i] = cc == 0.f ? 1.0f : .01f / cc;
+        const auto uv = per + p / l * (tr::sin(z) + 1.f) * tr::abs(tr::sin(l * 9.f - z * 2.f));
+        const auto cc = tr::length(tr::abs(tr::mod(uv, 1.f) - 0.5f));
+        c[i] = (cc == 0.f) ? 1.f : (0.01f / cc);
     }
     const auto v = c / l;
     return v.color(ss::uptime());
