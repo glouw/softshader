@@ -30,6 +30,11 @@ inline float clamp(float v, float lo, float hi)
     return v > hi ? hi : v < lo ? lo : v;
 }
 
+inline float fract(float x)
+{
+    return x - floor(x);
+}
+
 struct V2
 {
     float x {};
@@ -129,6 +134,31 @@ struct V2
     void print() const
     {
         std::printf("%f %f\n", (double)x, (double)y);
+    }
+};
+
+struct M2
+{
+    V2 x {};
+    V2 y {};
+    M2()
+    {
+    }
+    M2(float a, float b, float c, float d)
+        : x{a, b}
+        , y{c, d}
+    {
+    }
+
+    M2(V2 x, V2 y)
+        : x{x}
+        , y{y}
+    {
+    }
+
+    V2& operator[](int i)
+    {
+        return (i == 0) ? x : y;
     }
 };
 
@@ -269,6 +299,34 @@ struct V3
     }
 };
 
+struct M3
+{
+    V3 x {};
+    V3 y {};
+    V3 z {};
+    M3()
+    {
+    }
+    M3(float a, float b, float c,
+       float d, float e, float f,
+       float g, float h, float i)
+        : x {a, b, c}
+        , y {d, e, f}
+        , z {g, h, i}
+    {
+    }
+    M3(V3 x, V3 y, V3 z)
+        : x{x}
+        , y{y}
+        , z{z}
+    {
+    }
+    V3& operator[](int i)
+    {
+        return (i == 0) ? x : (i == 1) ? y : z;
+    }
+};
+
 namespace trig
 {
     constexpr auto PI = std::acos(-1.0f);
@@ -346,6 +404,11 @@ namespace trig
     inline float pow(float x, float n)
     {
         return std::pow(x, n);
+    }
+    // DOT PRODUCT.
+    inline float dot(V2 x, V2 y)
+    {
+        return x.x * y.x + x.y * y.y;
     }
 }
 
