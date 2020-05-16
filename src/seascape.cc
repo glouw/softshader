@@ -41,7 +41,7 @@ namespace
     float hash(ss::V2 p)
     {
         const auto h = tr::dot(p, ss::V2(127.1, 311.7));	
-        return ss::fract(tr::sin(h) * 43758.5453123);
+        return ss::fract(tr::sin(h) * 43758.5453123f);
     }
 
     float noise(ss::V2 p)
@@ -89,17 +89,17 @@ namespace
         auto choppy = SEA_CHOPPY;
         auto uv = ss::V2 { p.x, p.z };
         uv.x *= 0.75f;
-        auto d = float{};
+        auto d = float {};
         auto h = 0.0f;
         for(int i = 0; i < ITER_GEOMETRY; i++)
         {
-            // d = sea_octave((uv + sea_time()) * freq,choppy);
-            // d += sea_octave((uv - sea_time()) * freq,choppy);
-            // h += d * amp;
-            // uv *= octave_m;
-            // freq *= 1.9f;
-            // amp *= 0.22f;
-            // choppy = tr::mix(choppy, 1.f, 0.2f);
+            d = sea_octave((uv + sea_time()) * freq, choppy);
+            d += sea_octave((uv - sea_time()) * freq, choppy);
+            h += d * amp;
+            uv = ss::mul(uv, octave_m);
+            freq *= 1.9f;
+            amp *= 0.22f;
+            choppy = tr::mix(choppy, 1.f, 0.2f);
         }
         return p.y - h;
     }

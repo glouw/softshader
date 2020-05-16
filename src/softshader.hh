@@ -127,10 +127,12 @@ struct V2
         y /= v.y;
         return *this;
     }
+
     float& operator[](int i)
     {
         return (i == 0) ? x : y;
     }
+
     void print() const
     {
         std::printf("%f %f\n", (double)x, (double)y);
@@ -162,7 +164,7 @@ struct M2
     }
 };
 
-const auto res = V2 { float(xres), float(yres) };
+const auto res = V2 { float {xres}, float {yres} };
 
 struct V3
 {
@@ -462,6 +464,23 @@ inline float fract(float x)
 inline V2 fract(V2 v)
 {
     return V2 { fract(v.x), fract(v.y) };
+}
+
+inline V2 mul(V2 v, M2 m)
+{
+    return V2 {
+        v.x * m.x.x + v.y * m.x.y,
+        v.x * m.y.x + v.y * m.y.y,
+    };
+}
+
+inline V3 mul(V3 v, M3 m)
+{
+    return V3 {
+        v.x * m.x.x + v.y * m.x.y + v.z * m.x.z,
+        v.x * m.y.x + v.y * m.y.y + v.z * m.y.z,
+        v.x * m.z.x + v.y * m.z.y + v.z * m.z.z,
+    };
 }
 
 class Video
