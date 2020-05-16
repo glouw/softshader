@@ -7,7 +7,7 @@
 #include <thread>
 #include <vector>
 
-namespace softshader
+namespace ss
 {
 
 const auto xres = 768;
@@ -354,129 +354,156 @@ struct M3
     }
 };
 
-namespace trig
+constexpr auto PI = std::acos(-1.0f);
+
+inline float sin(float a)
 {
-    constexpr auto PI = std::acos(-1.0f);
-    inline float sin(float a)
-    {
-        return std::sin(a);
-    }
-    inline V2 sin(V2 v)
-    {
-        return V2 { std::sin(v.x), std::sin(v.y) };
-    }
-    inline V3 sin(V3 v)
-    {
-        return V3 { std::sin(v.x), std::sin(v.y), std::sin(v.z) };
-    }
-    inline float cos(float a)
-    {
-        return std::cos(a);
-    }
-    inline V2 cos(V2 v)
-    {
-        return V2 { std::cos(v.x), std::cos(v.y) };
-    }
-    inline V3 cos(V3 v)
-    {
-        return V3 { std::cos(v.x), std::cos(v.y), std::cos(v.z) };
-    }
-    inline float length(float f)
-    {
-        return f;
-    }
-    inline float length(V2 v)
-    {
-        return std::sqrt(v.x * v.x + v.y * v.y);
-    }
-    inline float length(V3 v)
-    {
-        return std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-    }
-    inline float abs(float a)
-    {
-        return std::fabs(a);
-    }
-    inline V2 abs(V2 v)
-    {
-        return V2 { std::fabs(v.x), std::fabs(v.y) };
-    }
-    inline V3 abs(V3 v)
-    {
-        return V3 { std::fabs(v.x), std::fabs(v.y), std::fabs(v.z) };
-    }
-    inline float mod(float x, float y)
-    {
-        return x - y * std::floor(x / y);
-    }
-    inline V2 mod(V2 v, float f)
-    {
-        return V2 { mod(v.x, f), mod(v.y, f) };
-    }
-    inline V3 mod(V3 v, float f)
-    {
-        return V3 { mod(v.x, f), mod(v.y, f), mod(v.z, f) };
-    }
-    inline float atan2(float y, float x)
-    {
-        return std::atan2(y, x);
-    }
-    inline float pow(float x, float n)
-    {
-        return std::pow(x, n);
-    }
-    inline V2 pow(V2 v, float n)
-    {
-        return V2 { std::pow(v.x, n), std::pow(v.y, n) };
-    }
-    inline V3 pow(V3 v, float n)
-    {
-        return V3 { std::pow(v.x, n), std::pow(v.y, n), std::pow(v.z, n) };
-    }
-    inline float dot(V2 x, V2 y)
-    {
-        return x.x * y.x + x.y * y.y;
-    }
-    inline float dot(V3 x, V3 y)
-    {
-        return x.x * y.x + x.y * y.y + x.z * y.z;
-    }
-    inline float mix(float x, float y, float a)
-    {
-        return x * (1.f - a) + y * a;
-    }
-    inline V2 mix(V2 x, V2 y, float a)
-    {
-        return V2 { mix(x.x, y.x, a), mix(x.y, y.y, a) };
-    }
-    inline V2 mix(V2 x, V2 y, V2 a)
-    {
-        return V2 { mix(x.x, y.x, a.x), mix(x.y, y.y, a.y) };
-    }
-    inline V3 mix(V3 x, V3 y, float a)
-    {
-        return V3 { mix(x.x, y.x, a), mix(x.y, y.y, a), mix(x.z, y.z, a) };
-    }
-    inline V3 mix(V3 x, V3 y, V3 a)
-    {
-        return V3 { mix(x.x, y.x, a.x), mix(x.y, y.y, a.y), mix(x.z, y.z, a.z) };
-    }
-    inline V2 reflect(V2 i, V2 n)
-    {
-        return i - n * dot(n, i) * 2.f;
-    }
-    inline V3 reflect(V3 i, V3 n)
-    {
-        return i - n * dot(n, i) * 2.f;
-    }
-    inline V2 normalize(V2 v)
-    {
-        return v / length(v);
-    }
-    inline V3 normalize(V3 v)
-    {
-        return v / length(v);
-    }
+    return std::sin(a);
+}
+
+inline V2 sin(V2 v)
+{
+    return V2 { std::sin(v.x), std::sin(v.y) };
+}
+
+inline V3 sin(V3 v)
+{
+    return V3 { std::sin(v.x), std::sin(v.y), std::sin(v.z) };
+}
+
+inline float cos(float a)
+{
+    return std::cos(a);
+}
+
+inline V2 cos(V2 v)
+{
+    return V2 { std::cos(v.x), std::cos(v.y) };
+}
+
+inline V3 cos(V3 v)
+{
+    return V3 { std::cos(v.x), std::cos(v.y), std::cos(v.z) };
+}
+
+inline float length(float f)
+{
+    return f;
+}
+
+inline float length(V2 v)
+{
+    return std::sqrt(v.x * v.x + v.y * v.y);
+}
+
+inline float length(V3 v)
+{
+    return std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+}
+
+inline float abs(float a)
+{
+    return std::fabs(a);
+}
+
+inline V2 abs(V2 v)
+{
+    return V2 { std::fabs(v.x), std::fabs(v.y) };
+}
+
+inline V3 abs(V3 v)
+{
+    return V3 { std::fabs(v.x), std::fabs(v.y), std::fabs(v.z) };
+}
+
+inline float mod(float x, float y)
+{
+    return x - y * std::floor(x / y);
+}
+
+inline V2 mod(V2 v, float f)
+{
+    return V2 { mod(v.x, f), mod(v.y, f) };
+}
+
+inline V3 mod(V3 v, float f)
+{
+    return V3 { mod(v.x, f), mod(v.y, f), mod(v.z, f) };
+}
+
+inline float atan2(float y, float x)
+{
+    return std::atan2(y, x);
+}
+
+inline float pow(float x, float n)
+{
+    return std::pow(x, n);
+}
+
+inline V2 pow(V2 v, float n)
+{
+    return V2 { std::pow(v.x, n), std::pow(v.y, n) };
+}
+
+inline V3 pow(V3 v, float n)
+{
+    return V3 { std::pow(v.x, n), std::pow(v.y, n), std::pow(v.z, n) };
+}
+
+inline float dot(V2 x, V2 y)
+{
+    return x.x * y.x + x.y * y.y;
+}
+
+inline float dot(V3 x, V3 y)
+{
+    return x.x * y.x + x.y * y.y + x.z * y.z;
+}
+
+inline float mix(float x, float y, float a)
+{
+    return x * (1.f - a) + y * a;
+}
+
+inline V2 mix(V2 x, V2 y, float a)
+{
+    return V2 { mix(x.x, y.x, a), mix(x.y, y.y, a) };
+}
+
+inline V2 mix(V2 x, V2 y, V2 a)
+{
+    return V2 { mix(x.x, y.x, a.x), mix(x.y, y.y, a.y) };
+}
+
+inline V3 mix(V3 x, V3 y, float a)
+{
+    return V3 { mix(x.x, y.x, a), mix(x.y, y.y, a), mix(x.z, y.z, a) };
+}
+
+inline V3 mix(V3 x, V3 y, V3 a)
+{
+    return V3 { mix(x.x, y.x, a.x), mix(x.y, y.y, a.y), mix(x.z, y.z, a.z) };
+}
+
+inline V2 reflect(V2 i, V2 n)
+{
+    return i - n * dot(n, i) * 2.f;
+}
+
+inline V3 reflect(V3 i, V3 n)
+{
+    return i - n * dot(n, i) * 2.f;
+}
+
+inline V2 normalize(V2 v)
+{
+    return v / length(v);
+}
+
+inline V3 normalize(V3 v)
+{
+    return v / length(v);
 }
 
 inline float floor(float x)
@@ -666,6 +693,3 @@ void run(Shade shade)
     }
 }
 }
-
-namespace ss = softshader;
-namespace tr = ss::trig;
