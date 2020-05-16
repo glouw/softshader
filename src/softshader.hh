@@ -153,14 +153,14 @@ struct M2
     {
     }
     M2(float a, float b, float c, float d)
-        : x{a, b}
-        , y{c, d}
+        : x { a, b }
+        , y { c, d }
     {
     }
 
     M2(V2 x, V2 y)
-        : x{x}
-        , y{y}
+        : x { x }
+        , y { y }
     {
     }
 
@@ -170,7 +170,7 @@ struct M2
     }
 };
 
-const auto res = V2 { float {xres}, float {yres} };
+const auto res = V2 { float { xres }, float { yres } };
 
 struct V3
 {
@@ -322,17 +322,17 @@ struct M3
     {
     }
     M3(float a, float b, float c,
-       float d, float e, float f,
-       float g, float h, float i)
-        : x {a, b, c}
-        , y {d, e, f}
-        , z {g, h, i}
+        float d, float e, float f,
+        float g, float h, float i)
+        : x { a, b, c }
+        , y { d, e, f }
+        , z { g, h, i }
     {
     }
     M3(V3 x, V3 y, V3 z)
-        : x{x}
-        , y{y}
-        , z{z}
+        : x { x }
+        , y { y }
+        , z { z }
     {
     }
     V3 operator*(V3 v)
