@@ -164,8 +164,8 @@ ss::V3 get_pixel(ss::V2 coord, float time)
     auto uv = coord / ss::res;
     uv = uv * 2.f - 1.f;
     uv.x *= ss::res.x / ss::res.y;
-    auto ang = ss::V3 { ss::sin(time * 3.f) * 0.1f, ss::sin(time) * 0.2f + 0.3f, time };
-    auto ori = ss::V3 { 0.f, 3.5f, time * 5.f };
+    const auto ang = ss::V3 { ss::sin(time * 3.f) * 0.1f, ss::sin(time) * 0.2f + 0.3f, time };
+    const auto ori = ss::V3 { 0.f, 3.5f, time * 5.f };
     auto dir = ss::normalize(ss::V3 { uv.x, uv.y, -2.f });
     dir.z += ss::length(uv) * 0.14f;
     dir = from_euler(ang) * ss::normalize(dir);
