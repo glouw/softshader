@@ -444,6 +444,14 @@ namespace trig
     {
         return i - n * dot(n, i) * 2.f;
     }
+    inline V2 normalize(V2 v)
+    {
+        return v / length(v);
+    }
+    inline V3 normalize(V3 v)
+    {
+        return v / length(v);
+    }
 }
 
 inline float floor(float x)

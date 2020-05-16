@@ -108,39 +108,35 @@ namespace
     {
         return map(p, ITER_FRAGMENT);
     }
+
+    ss::V3 getSeaColor(ss::V3 p, ss::V3 n, ss::V3 l, ss::V3 eye, ss::V3 dist)
+    {
+        auto fresnel = ss::clamp(1.f - tr::dot(n, eye * -1.f), 0.f, 1.f);
+        fresnel = tr::pow(fresnel, 3.f) * 0.5f;
+        const auto reflected = getSkyColor(tr::reflect(eye, n));    
+        const auto refracted = SEA_BASE + SEA_WATER_COLOR * 0.12f * diffuse(n, l, 80.f); 
+        auto color = tr::mix(refracted, reflected, fresnel);
+        const auto atten = ss::max(1.f - tr::dot(dist, dist) * 0.001f, 0.f);
+        color += SEA_WATER_COLOR * (p.y - SEA_HEIGHT) * 0.18f * atten;
+        color += ss::V3(specular(n, l, eye, 60.f), 0.f, 0.f); // XXX. MAYBE SINGLE CONSTRUCTOR MAKES ALL COLORS THE SAME? MAKES SENSE SINCE LIGHT IS WHITE.
+        return color;
+    }
+
+    ss::V3 getNormal(ss::V3 p, float eps)
+    {
+        ss::V3 n {};
+        n.y = map_detailed(p);    
+        n.x = map_detailed(ss::V3(p.x + eps, p.y, p.z)) - n.y;
+        n.z = map_detailed(ss::V3(p.x, p.y, p.z + eps)) - n.y;
+        n.y = eps;
+        return tr::normalize(n);
+    }
 }
 
 int main()
 {
 }
-//
-//vec3 getSeaColor(vec3 p, vec3 n, vec3 l, vec3 eye, vec3 dist) {  
-//    float fresnel = clamp(1.0 - dot(n,-eye), 0.0, 1.0);
-//    fresnel = pow(fresnel,3.0) * 0.5;
-//        
-//    vec3 reflected = getSkyColor(reflect(eye,n));    
-//    vec3 refracted = SEA_BASE + diffuse(n,l,80.0) * SEA_WATER_COLOR * 0.12; 
-//    
-//    vec3 color = mix(refracted,reflected,fresnel);
-//    
-//    float atten = max(1.0 - dot(dist,dist) * 0.001, 0.0);
-//    color += SEA_WATER_COLOR * (p.y - SEA_HEIGHT) * 0.18 * atten;
-//    
-//    color += vec3(specular(n,l,eye,60.0));
-//    
-//    return color;
-//}
-//
-//// tracing
-//vec3 getNormal(vec3 p, float eps) {
-//    vec3 n;
-//    n.y = map_detailed(p);    
-//    n.x = map_detailed(vec3(p.x+eps,p.y,p.z)) - n.y;
-//    n.z = map_detailed(vec3(p.x,p.y,p.z+eps)) - n.y;
-//    n.y = eps;
-//    return normalize(n);
-//}
-//
+
 //float heightMapTracing(vec3 ori, vec3 dir, out vec3 p) {  
 //    float tm = 0.0;
 //    float tx = 1000.0;    
