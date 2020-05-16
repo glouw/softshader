@@ -53,6 +53,11 @@ struct V2
         , y { y }
     {
     }
+    V2(float xy)
+    : x { xy }
+    , y { xy }
+    {
+    }
     V2 operator+(V2 v) const
     {
         return V2 { x + v.x, y + v.y };
@@ -322,8 +327,8 @@ struct M3
     {
     }
     M3(float a, float b, float c,
-        float d, float e, float f,
-        float g, float h, float i)
+       float d, float e, float f,
+       float g, float h, float i)
         : x { a, b, c }
         , y { d, e, f }
         , z { g, h, i }
