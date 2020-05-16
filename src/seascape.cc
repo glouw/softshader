@@ -82,16 +82,16 @@ namespace
         return tr::pow(1.f - tr::pow(wv.x * wv.y, 0.65f), choppy);
     }
 
-    float map(ss::V3 p)
+    float map(ss::V3 p, const int bound = ITER_GEOMETRY)
     {
         auto freq = SEA_FREQ;
         auto amp = SEA_HEIGHT;
         auto choppy = SEA_CHOPPY;
         auto uv = ss::V2 { p.x, p.z };
         uv.x *= 0.75f;
-        auto d = float {};
+        auto d = 0.f;
         auto h = 0.0f;
-        for(int i = 0; i < ITER_GEOMETRY; i++)
+        for(int i = 0; i < bound; i++)
         {
             d = sea_octave((uv + sea_time()) * freq, choppy);
             d += sea_octave((uv - sea_time()) * freq, choppy);
@@ -103,28 +103,16 @@ namespace
         }
         return p.y - h;
     }
+
+    float map_detailed(ss::V3 p)
+    {
+        return map(p, ITER_FRAGMENT);
+    }
 }
 
 int main()
 {
 }
-//
-//float map_detailed(vec3 p) {
-//    float freq = SEA_FREQ;
-//    float amp = SEA_HEIGHT;
-//    float choppy = SEA_CHOPPY;
-//    vec2 uv = p.xz; uv.x *= 0.75;
-//    
-//    float d, h = 0.0;    
-//    for(int i = 0; i < ITER_FRAGMENT; i++) {        
-//    	d = sea_octave((uv+SEA_TIME)*freq,choppy);
-//    	d += sea_octave((uv-SEA_TIME)*freq,choppy);
-//        h += d * amp;        
-//    	uv *= octave_m; freq *= 1.9; amp *= 0.22;
-//        choppy = mix(choppy,1.0,0.2);
-//    }
-//    return p.y - h;
-//}
 //
 //vec3 getSeaColor(vec3 p, vec3 n, vec3 l, vec3 eye, vec3 dist) {  
 //    float fresnel = clamp(1.0 - dot(n,-eye), 0.0, 1.0);
