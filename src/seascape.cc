@@ -33,7 +33,10 @@ namespace
         };
     }
 
-    const auto octave_m = ss::M2 {1.6f, 1.2f, -1.2f, 1.6f};
+    const auto octave_m = ss::M2 {
+         1.6f, 1.2f,
+        -1.2f, 1.6f,
+    };
 
     float hash(ss::V2 p)
     {
@@ -69,37 +72,42 @@ namespace
         e.y = (ss::max(e.y, 0.f) * 0.8f + 0.2f) * 0.8f;
         return ss::V3(tr::pow(1.f - e.y, 2.f), 1.f - e.y, 0.6f + (1.f - e.y) * 0.4f) * 1.1f;
     }
+
+    float sea_octave(ss::V2 uv, float choppy)
+    {
+        uv += noise(uv);
+        auto wv = tr::abs(tr::sin(uv)) * -1.f + 1.f;
+        const auto swv = tr::abs(tr::cos(uv));
+        wv = tr::mix(wv, swv, wv);
+        return tr::pow(1.f - tr::pow(wv.x * wv.y, 0.65f), choppy);
+    }
+
+    float map(ss::V3 p)
+    {
+        auto freq = SEA_FREQ;
+        auto amp = SEA_HEIGHT;
+        auto choppy = SEA_CHOPPY;
+        auto uv = ss::V2 { p.x, p.z };
+        uv.x *= 0.75f;
+        auto d = float{};
+        auto h = 0.0f;
+        for(int i = 0; i < ITER_GEOMETRY; i++)
+        {
+            // d = sea_octave((uv + sea_time()) * freq,choppy);
+            // d += sea_octave((uv - sea_time()) * freq,choppy);
+            // h += d * amp;
+            // uv *= octave_m;
+            // freq *= 1.9f;
+            // amp *= 0.22f;
+            // choppy = tr::mix(choppy, 1.f, 0.2f);
+        }
+        return p.y - h;
+    }
 }
 
 int main()
 {
 }
-
-//// sea
-//float sea_octave(vec2 uv, float choppy) {
-//    uv += noise(uv);        
-//    vec2 wv = 1.0-abs(sin(uv));
-//    vec2 swv = abs(cos(uv));    
-//    wv = mix(wv,swv,wv);
-//    return pow(1.0-pow(wv.x * wv.y,0.65),choppy);
-//}
-//
-//float map(vec3 p) {
-//    float freq = SEA_FREQ;
-//    float amp = SEA_HEIGHT;
-//    float choppy = SEA_CHOPPY;
-//    vec2 uv = p.xz; uv.x *= 0.75;
-//    
-//    float d, h = 0.0;    
-//    for(int i = 0; i < ITER_GEOMETRY; i++) {        
-//    	d = sea_octave((uv+SEA_TIME)*freq,choppy);
-//    	d += sea_octave((uv-SEA_TIME)*freq,choppy);
-//        h += d * amp;        
-//    	uv *= octave_m; freq *= 1.9; amp *= 0.22;
-//        choppy = mix(choppy,1.0,0.2);
-//    }
-//    return p.y - h;
-//}
 //
 //float map_detailed(vec3 p) {
 //    float freq = SEA_FREQ;

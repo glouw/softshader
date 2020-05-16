@@ -422,9 +422,17 @@ namespace trig
     {
         return V2 { mix(x.x, y.x, a), mix(x.y, y.y, a) };
     }
+    inline V2 mix(V2 x, V2 y, V2 a)
+    {
+        return V2 { mix(x.x, y.x, a.x), mix(x.y, y.y, a.y) };
+    }
     inline V3 mix(V3 x, V3 y, float a)
     {
         return V3 { mix(x.x, y.x, a), mix(x.y, y.y, a), mix(x.z, y.z, a) };
+    }
+    inline V3 mix(V3 x, V3 y, V3 a)
+    {
+        return V3 { mix(x.x, y.x, a.x), mix(x.y, y.y, a.y), mix(x.z, y.z, a.z) };
     }
     inline V2 reflect(V2 i, V2 n)
     {
