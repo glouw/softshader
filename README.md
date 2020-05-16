@@ -10,14 +10,14 @@ and emulates popular Shadertoy shaders multithreaded entirely in software using 
 
 Then, run a shader of your choice.
 
-    ./tunnel
+    ./seascape
 
-![](img/tunnel.png)
+![](img/seascape.png)
 
     ./creation
 
 ![](img/creation.png)
 
-    ./seascape
+    ./tunnel
 
-![](img/seascape.png)
+![](img/tunnel.png)
