@@ -30,6 +30,12 @@ inline float clamp(float v, float lo, float hi)
     return v > hi ? hi : v < lo ? lo : v;
 }
 
+float smoothstep(float edge0, float edge1, float x)
+{
+    float t = clamp((x - edge0) / (edge1 - edge0), 0.f, 1.f);
+    return t * t * (3.f - 2.f * t);
+}
+
 inline float max(float a, float b)
 {
     return a > b ? a : b;
@@ -172,6 +178,12 @@ struct V3
     float y {};
     float z {};
     V3()
+    {
+    }
+    V3(float xyz)
+        : x { xyz }
+        , y { xyz }
+        , z { xyz }
     {
     }
     V3(float x, float y, float z)
@@ -322,6 +334,14 @@ struct M3
         , y{y}
         , z{z}
     {
+    }
+    V3 operator*(V3 v)
+    {
+        return V3 {
+            x.x * v.x + x.y * v.y + x.z * v.z,
+            y.x * v.x + y.y * v.y + y.z * v.z,
+            z.x * v.x + z.y * v.y + z.z * v.z,
+        };
     }
     V3& operator[](int i)
     {

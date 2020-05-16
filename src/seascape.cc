@@ -118,7 +118,7 @@ namespace
         auto color = tr::mix(refracted, reflected, fresnel);
         const auto atten = ss::max(1.f - tr::dot(dist, dist) * 0.001f, 0.f);
         color += SEA_WATER_COLOR * (p.y - SEA_HEIGHT) * 0.18f * atten;
-        color += ss::V3(specular(n, l, eye, 60.f), 0.f, 0.f); // XXX. MAYBE SINGLE CONSTRUCTOR MAKES ALL COLORS THE SAME? MAKES SENSE SINCE LIGHT IS WHITE.
+        color += ss::V3(specular(n, l, eye, 60.f)); // XXX. MAYBE SINGLE CONSTRUCTOR MAKES ALL COLORS THE SAME? MAKES SENSE SINCE LIGHT IS WHITE.
         return color;
     }
 
@@ -131,76 +131,65 @@ namespace
         n.y = eps;
         return tr::normalize(n);
     }
+
+    float heightMapTracing(ss::V3 ori, ss::V3 dir, /* OUT */ ss::V3& p)
+    {   
+        auto tm = 0.f;
+        auto tx = 1000.f;    
+        auto hx = map(ori + dir * tx);
+        if(hx > 0.f)
+            return tx;   
+        auto hm = map(ori + dir * tm);    
+        auto tmid = 0.f;
+        for(int i = 0; i < NUM_STEPS; i++)
+        {
+            tmid = tr::mix(tm, tx, hm / (hm - hx));                   
+            p = ori + dir * tmid;                   
+        	auto hmid = map(p);
+    		if(hmid < 0.f)
+            {
+            	tx = tmid;
+                hx = hmid;
+            }
+            else
+            {
+                tm = tmid;
+                hm = hmid;
+            }
+        }
+        return tmid;
+    }
+    
+    ss::V3 getPixel(ss::V2 coord, float time)
+    {
+        auto uv = coord / ss::res;
+        uv = uv * 2.0 - 1.0;
+        uv.x *= ss::res.x / ss::res.y;
+
+        auto ang = ss::V3{tr::sin(time * 3.f) * 0.1f, tr::sin(time) * 0.2f + 0.3f, time};
+        auto ori = ss::V3{0.f, 3.5f, time * 5.f};
+        auto dir = tr::normalize(ss::V3 { uv.x, uv.y, -2.f });
+        dir.z += tr::length(uv) * 0.14f;
+        dir = from_euler(ang) * tr::normalize(dir);
+
+        auto p = ss::V3{};
+        heightMapTracing(ori, dir, p);
+        auto dist = p - ori;
+        auto n = getNormal(p, tr::dot(dist, dist) * EPSILON_NRM);
+        auto light = tr::normalize(ss::V3{0.f, 1.f, 0.8f}); 
+
+        return tr::mix(getSkyColor(dir), getSeaColor(p, n, light, dir, dist), tr::pow(ss::smoothstep(0.f, -0.02f, dir.y), 0.2f));
+    }
+}
+
+static uint32_t shade(const ss::V2 coord)
+{
+    const auto time = ss::uptime() * 0.3f;
+    const auto v = tr::pow(getPixel(coord, time), 0.65f);
+    return v.color(1.f);
 }
 
 int main()
 {
+    ss::run(shade);
 }
-
-//float heightMapTracing(vec3 ori, vec3 dir, out vec3 p) {  
-//    float tm = 0.0;
-//    float tx = 1000.0;    
-//    float hx = map(ori + dir * tx);
-//    if(hx > 0.0) return tx;   
-//    float hm = map(ori + dir * tm);    
-//    float tmid = 0.0;
-//    for(int i = 0; i < NUM_STEPS; i++) {
-//        tmid = mix(tm,tx, hm/(hm-hx));                   
-//        p = ori + dir * tmid;                   
-//    	float hmid = map(p);
-//		if(hmid < 0.0) {
-//        	tx = tmid;
-//            hx = hmid;
-//        } else {
-//            tm = tmid;
-//            hm = hmid;
-//        }
-//    }
-//    return tmid;
-//}
-//
-//vec3 getPixel(in vec2 coord, float time) {    
-//    vec2 uv = coord / iResolution.xy;
-//    uv = uv * 2.0 - 1.0;
-//    uv.x *= iResolution.x / iResolution.y;    
-//        
-//    // ray
-//    vec3 ang = vec3(sin(time*3.0)*0.1,sin(time)*0.2+0.3,time);    
-//    vec3 ori = vec3(0.0,3.5,time*5.0);
-//    vec3 dir = normalize(vec3(uv.xy,-2.0)); dir.z += length(uv) * 0.14;
-//    dir = normalize(dir) * fromEuler(ang);
-//    
-//    // tracing
-//    vec3 p;
-//    heightMapTracing(ori,dir,p);
-//    vec3 dist = p - ori;
-//    vec3 n = getNormal(p, dot(dist,dist) * EPSILON_NRM);
-//    vec3 light = normalize(vec3(0.0,1.0,0.8)); 
-//             
-//    // color
-//    return mix(
-//        getSkyColor(dir),
-//        getSeaColor(p,n,light,dir,dist),
-//    	pow(smoothstep(0.0,-0.02,dir.y),0.2));
-//}
-//
-//// main
-//void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
-//    float time = iTime * 0.3 + iMouse.x*0.01;
-//	
-//#ifdef AA
-//    vec3 color = vec3(0.0);
-//    for(int i = -1; i <= 1; i++) {
-//        for(int j = -1; j <= 1; j++) {
-//        	vec2 uv = fragCoord+vec2(i,j)/3.0;
-//    		color += getPixel(uv, time);
-//        }
-//    }
-//    color /= 9.0;
-//#else
-//    vec3 color = getPixel(fragCoord, time);
-//#endif
-//    
-//    // post
-//	fragColor = vec4(pow(color,vec3(0.65)), 1.0);
-//}
