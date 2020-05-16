@@ -2,76 +2,79 @@
 
 #include "softshader.hh"
 
-namespace {
-
-const auto NUM_STEPS = 8;
-const auto EPSILON = 1e-3f;
-const auto EPSILON_NRM = 0.1f / ss::res.x;
-const auto ITER_GEOMETRY = 3;
-const auto ITER_FRAGMENT = 5;
-const auto SEA_HEIGHT = 0.6f;
-const auto SEA_CHOPPY = 4.f;
-const auto SEA_SPEED = 0.8f;
-const auto SEA_FREQ = 0.16f;
-const auto SEA_BASE = ss::V3{0.0f, 0.09f, 0.18f};
-const auto SEA_WATER_COLOR = ss::V3{0.8f, 0.9f, 0.6f} * 0.6f;
-
-float sea_time()
+namespace
 {
-    return ss::uptime() * SEA_SPEED;
-}
+    const auto NUM_STEPS = 8;
+    const auto EPSILON = 1e-3f;
+    const auto EPSILON_NRM = 0.1f / ss::res.x;
+    const auto ITER_GEOMETRY = 3;
+    const auto ITER_FRAGMENT = 5;
+    const auto SEA_HEIGHT = 0.6f;
+    const auto SEA_CHOPPY = 4.f;
+    const auto SEA_SPEED = 0.8f;
+    const auto SEA_FREQ = 0.16f;
+    const auto SEA_BASE = ss::V3{0.0f, 0.09f, 0.18f};
+    const auto SEA_WATER_COLOR = ss::V3{0.8f, 0.9f, 0.6f} * 0.6f;
 
-ss::M3 from_euler(ss::V3 ang)
-{
-    const auto a1 = ss::V2(tr::sin(ang.x), tr::cos(ang.x));
-    const auto a2 = ss::V2(tr::sin(ang.y), tr::cos(ang.y));
-    const auto a3 = ss::V2(tr::sin(ang.z), tr::cos(ang.z));
-    return ss::M3 {
-        ss::V3 {  a1.y * a3.y + a1.x * a2.x * a3.x, a1.y * a2.x * a3.x + a3.y * a1.x, -a2.y * a3.x },
-        ss::V3 { -a2.y * a1.x,  a1.y * a2.y,  a2.x                                                 },
-        ss::V3 {  a3.y * a1.x * a2.x + a1.y * a3.x, a1.x * a3.x - a1.y * a3.y * a2.x,  a2.y * a3.y },
-    };
-}
+    float sea_time()
+    {
+        return ss::uptime() * SEA_SPEED;
+    }
 
-const auto octave_m = ss::M2 {1.6f, 1.2f, -1.2f, 1.6f};
+    ss::M3 from_euler(ss::V3 ang)
+    {
+        const auto a1 = ss::V2(tr::sin(ang.x), tr::cos(ang.x));
+        const auto a2 = ss::V2(tr::sin(ang.y), tr::cos(ang.y));
+        const auto a3 = ss::V2(tr::sin(ang.z), tr::cos(ang.z));
+        return ss::M3 {
+            ss::V3 {  a1.y * a3.y + a1.x * a2.x * a3.x, a1.y * a2.x * a3.x + a3.y * a1.x, -a2.y * a3.x },
+            ss::V3 { -a2.y * a1.x,  a1.y * a2.y,  a2.x                                                 },
+            ss::V3 {  a3.y * a1.x * a2.x + a1.y * a3.x, a1.x * a3.x - a1.y * a3.y * a2.x,  a2.y * a3.y },
+        };
+    }
 
-float hash(ss::V2 p)
-{
-    float h = tr::dot(p, ss::V2(127.1, 311.7));	
-    return ss::fract(tr::sin(h) * 43758.5453123);
-}
+    const auto octave_m = ss::M2 {1.6f, 1.2f, -1.2f, 1.6f};
 
+    float hash(ss::V2 p)
+    {
+        const auto h = tr::dot(p, ss::V2(127.1, 311.7));	
+        return ss::fract(tr::sin(h) * 43758.5453123);
+    }
+
+    float noise(ss::V2 p)
+    {
+        const auto i = ss::floor(p);
+        const auto f = ss::fract(p);	
+        const auto u = f * f * (f * -2.f + 3.f);
+        return -1.f + 2.f *
+            tr::mix(tr::mix(hash(i + ss::V2{0.f, 0.f}),
+                            hash(i + ss::V2{1.f, 0.f}), u.x),
+                    tr::mix(hash(i + ss::V2{0.f, 1.f}),
+                            hash(i + ss::V2{1.f, 1.f}), u.x), u.y);
+    }
+
+    float diffuse(ss::V3 n, ss::V3 l, float p)
+    {
+        return tr::pow(tr::dot(n, l) * 0.4f + 0.6f, p);
+    }
+
+    float specular(ss::V3 n, ss::V3 l, ss::V3 e, float s)
+    {
+        const auto nrm = (s + 8.f) / (tr::PI * 8.f);
+        return tr::pow(ss::max(tr::dot(tr::reflect(e, n), l), 0.f), s) * nrm;
+    }
+
+    ss::V3 getSkyColor(ss::V3 e)
+    {
+        e.y = (ss::max(e.y, 0.f) * 0.8f + 0.2f) * 0.8f;
+        return ss::V3(tr::pow(1.f - e.y, 2.f), 1.f - e.y, 0.6f + (1.f - e.y) * 0.4f) * 1.1f;
+    }
 }
 
 int main()
 {
 }
 
-//float noise( in vec2 p ) {
-//    vec2 i = floor( p );
-//    vec2 f = fract( p );	
-//	vec2 u = f*f*(3.0-2.0*f);
-//    return -1.0+2.0*mix( mix( hash( i + vec2(0.0,0.0) ), 
-//                     hash( i + vec2(1.0,0.0) ), u.x),
-//                mix( hash( i + vec2(0.0,1.0) ), 
-//                     hash( i + vec2(1.0,1.0) ), u.x), u.y);
-//}
-//
-//// lighting
-//float diffuse(vec3 n,vec3 l,float p) {
-//    return pow(dot(n,l) * 0.4 + 0.6,p);
-//}
-//float specular(vec3 n,vec3 l,vec3 e,float s) {    
-//    float nrm = (s + 8.0) / (PI * 8.0);
-//    return pow(max(dot(reflect(e,n),l),0.0),s) * nrm;
-//}
-//
-//// sky
-//vec3 getSkyColor(vec3 e) {
-//    e.y = (max(e.y,0.0)*0.8+0.2)*0.8;
-//    return vec3(pow(1.0-e.y,2.0), 1.0-e.y, 0.6+(1.0-e.y)*0.4) * 1.1;
-//}
-//
 //// sea
 //float sea_octave(vec2 uv, float choppy) {
 //    uv += noise(uv);        

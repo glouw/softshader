@@ -30,9 +30,9 @@ inline float clamp(float v, float lo, float hi)
     return v > hi ? hi : v < lo ? lo : v;
 }
 
-inline float fract(float x)
+inline float max(float a, float b)
 {
-    return x - floor(x);
+    return a > b ? a : b;
 }
 
 struct V2
@@ -330,7 +330,6 @@ struct M3
 namespace trig
 {
     constexpr auto PI = std::acos(-1.0f);
-    // SIN.
     inline float sin(float a)
     {
         return std::sin(a);
@@ -343,7 +342,6 @@ namespace trig
     {
         return V3 { std::sin(v.x), std::sin(v.y), std::sin(v.z) };
     }
-    // COS.
     inline float cos(float a)
     {
         return std::cos(a);
@@ -356,7 +354,6 @@ namespace trig
     {
         return V3 { std::cos(v.x), std::cos(v.y), std::cos(v.z) };
     }
-    // LENGTH.
     inline float length(float f)
     {
         return f;
@@ -369,7 +366,6 @@ namespace trig
     {
         return std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
     }
-    // ABS.
     inline float abs(float a)
     {
         return std::fabs(a);
@@ -382,7 +378,6 @@ namespace trig
     {
         return V3 { std::fabs(v.x), std::fabs(v.y), std::fabs(v.z) };
     }
-    // MOD.
     inline float mod(float x, float y)
     {
         return x - y * std::floor(x / y);
@@ -395,21 +390,70 @@ namespace trig
     {
         return V3 { mod(v.x, f), mod(v.y, f), mod(v.z, f) };
     }
-    // ATAN2 (SIMPLE WRAPPER FOR NAMESPACING).
     inline float atan2(float y, float x)
     {
         return std::atan2(y, x);
     }
-    // POW (SIMPLE WRAPPER FOR NAMESPACING).
     inline float pow(float x, float n)
     {
         return std::pow(x, n);
     }
-    // DOT PRODUCT.
+    inline V2 pow(V2 v, float n)
+    {
+        return V2 { std::pow(v.x, n), std::pow(v.y, n) };
+    }
+    inline V3 pow(V3 v, float n)
+    {
+        return V3 { std::pow(v.x, n), std::pow(v.y, n), std::pow(v.z, n) };
+    }
     inline float dot(V2 x, V2 y)
     {
         return x.x * y.x + x.y * y.y;
     }
+    inline float dot(V3 x, V3 y)
+    {
+        return x.x * y.x + x.y * y.y + x.z * y.z;
+    }
+    inline float mix(float x, float y, float a)
+    {
+        return x * (1.f - a) + y * a;
+    }
+    inline V2 mix(V2 x, V2 y, float a)
+    {
+        return V2 { mix(x.x, y.x, a), mix(x.y, y.y, a) };
+    }
+    inline V3 mix(V3 x, V3 y, float a)
+    {
+        return V3 { mix(x.x, y.x, a), mix(x.y, y.y, a), mix(x.z, y.z, a) };
+    }
+    inline V2 reflect(V2 i, V2 n)
+    {
+        return i - n * dot(n, i) * 2.f;
+    }
+    inline V3 reflect(V3 i, V3 n)
+    {
+        return i - n * dot(n, i) * 2.f;
+    }
+}
+
+inline float floor(float x)
+{
+    return std::floor(x);
+}
+
+inline V2 floor(V2 v)
+{
+    return V2 { floor(v.x), floor(v.y) };
+}
+
+inline float fract(float x)
+{
+    return x - floor(x);
+}
+
+inline V2 fract(V2 v)
+{
+    return V2 { fract(v.x), fract(v.y) };
 }
 
 class Video
