@@ -88,8 +88,7 @@ namespace
         auto h = 0.f;
         for(int i = 0; i < bound; i++)
         {
-            d = sea_octave((uv + sea_time()) * freq, choppy)
-                + sea_octave((uv - sea_time()) * freq, choppy);
+            d = sea_octave((uv + sea_time()) * freq, choppy) + sea_octave((uv - sea_time()) * freq, choppy);
             h += d * amp;
             uv = ss::mul(uv, OCTAVE);
             freq *= 1.9f;
