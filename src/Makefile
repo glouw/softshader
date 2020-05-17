@@ -1,6 +1,6 @@
 CC = g++ --std=c++17
 
-CFLAGS = -O3 -march=native -Wall -Wextra -Wpedantic -Wdouble-promotion
+CFLAGS = -Ofast -march=native -funroll-loops -Wall -Wextra -Wpedantic -Wdouble-promotion
 # CFLAGS+= -fsanitize=undefined -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow
 
 LDFLAGS = -lSDL2 -lpthread

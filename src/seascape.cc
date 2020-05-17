@@ -16,16 +16,18 @@ const auto SEA_FREQ = 0.16f;
 const auto SEA_BASE = ss::V3 { 0.0f, 0.09f, 0.18f };
 const auto SEA_WATER_COLOR = ss::V3 { 0.8f, 0.9f, 0.6f } * 0.6f;
 
-float sea_time()
+const auto octave_m = ss::M2 { 1.6f, 1.2f, -1.2f, 1.6f };
+
+inline float sea_time()
 {
     return ss::uptime() * SEA_SPEED;
 }
 
-ss::M3 from_euler(ss::V3 ang)
+inline ss::M3 from_euler(ss::V3 ang)
 {
-    const auto a1 = ss::V2(ss::sin(ang.x), ss::cos(ang.x));
-    const auto a2 = ss::V2(ss::sin(ang.y), ss::cos(ang.y));
-    const auto a3 = ss::V2(ss::sin(ang.z), ss::cos(ang.z));
+    const auto a1 = ss::V2 { ss::sin(ang.x), ss::cos(ang.x) };
+    const auto a2 = ss::V2 { ss::sin(ang.y), ss::cos(ang.y) };
+    const auto a3 = ss::V2 { ss::sin(ang.z), ss::cos(ang.z) };
     // clang-format off
     return ss::M3 {
         ss::V3 {  a1.y * a3.y + a1.x * a2.x * a3.x, a1.y * a2.x * a3.x + a3.y * a1.x, -a2.y * a3.x },
@@ -35,15 +37,12 @@ ss::M3 from_euler(ss::V3 ang)
     // clang-format on
 }
 
-const auto octave_m = ss::M2 { 1.6f, 1.2f, -1.2f, 1.6f };
-
-float hash(ss::V2 p)
+inline float hash(ss::V2 p)
 {
-    const auto h = ss::dot(p, ss::V2(127.1, 311.7));
-    return ss::fract(ss::sin(h) * 43758.5453123f);
+    return ss::fract(ss::sin(ss::dot(p, ss::V2 { 127.1, 311.7 })) * 43758.5453123f);
 }
 
-float noise(ss::V2 p)
+inline float noise(ss::V2 p)
 {
     const auto i = ss::floor(p);
     const auto f = ss::fract(p);
@@ -55,24 +54,23 @@ float noise(ss::V2 p)
     // clang-format on
 }
 
-float diffuse(ss::V3 n, ss::V3 l, float p)
+inline float diffuse(ss::V3 n, ss::V3 l, float p)
 {
     return ss::pow(ss::dot(n, l) * 0.4f + 0.6f, p);
 }
 
-float specular(ss::V3 n, ss::V3 l, ss::V3 e, float s)
+inline float specular(ss::V3 n, ss::V3 l, ss::V3 e, float s)
 {
-    const auto nrm = (s + 8.f) / (ss::PI * 8.f);
-    return ss::pow(ss::max(ss::dot(ss::reflect(e, n), l), 0.f), s) * nrm;
+    return ss::pow(ss::max(ss::dot(ss::reflect(e, n), l), 0.f), s) * ((s + 8.f) / (ss::PI * 8.f));
 }
 
-ss::V3 get_sky_color(ss::V3 e)
+inline ss::V3 get_sky_color(ss::V3 e)
 {
     e.y = (ss::max(e.y, 0.f) * 0.8f + 0.2f) * 0.8f;
     return ss::V3(ss::pow(1.f - e.y, 2.f), 1.f - e.y, 0.6f + (1.f - e.y) * 0.4f) * 1.1f;
 }
 
-float sea_octave(ss::V2 uv, float choppy)
+inline float sea_octave(ss::V2 uv, float choppy)
 {
     uv += noise(uv);
     auto wv = ss::abs(ss::sin(uv)) * -1.f + 1.f;
@@ -81,19 +79,17 @@ float sea_octave(ss::V2 uv, float choppy)
     return ss::pow(1.f - ss::pow(wv.x * wv.y, 0.65f), choppy);
 }
 
-float map(ss::V3 p, const int bound = ITER_GEOMETRY)
+inline float map(ss::V3 p, const int bound = ITER_GEOMETRY)
 {
     auto freq = SEA_FREQ;
     auto amp = SEA_HEIGHT;
     auto choppy = SEA_CHOPPY;
-    auto uv = ss::V2 { p.x, p.z };
-    uv.x *= 0.75f;
+    auto uv = ss::V2 { p.x * 0.75f, p.z };
     auto d = 0.f;
-    auto h = 0.0f;
+    auto h = 0.f;
     for(int i = 0; i < bound; i++)
     {
-        d = sea_octave((uv + sea_time()) * freq, choppy);
-        d += sea_octave((uv - sea_time()) * freq, choppy);
+        d = sea_octave((uv + sea_time()) * freq, choppy) + sea_octave((uv - sea_time()) * freq, choppy);
         h += d * amp;
         uv = ss::mul(uv, octave_m);
         freq *= 1.9f;
@@ -103,12 +99,12 @@ float map(ss::V3 p, const int bound = ITER_GEOMETRY)
     return p.y - h;
 }
 
-float map_detailed(ss::V3 p)
+inline float map_detailed(ss::V3 p)
 {
     return map(p, ITER_FRAGMENT);
 }
 
-ss::V3 get_sea_color(ss::V3 p, ss::V3 n, ss::V3 l, ss::V3 eye, ss::V3 dist)
+inline ss::V3 get_sea_color(ss::V3 p, ss::V3 n, ss::V3 l, ss::V3 eye, ss::V3 dist)
 {
     auto fresnel = ss::clamp(1.f - ss::dot(n, eye * -1.f), 0.f, 1.f);
     fresnel = ss::pow(fresnel, 3.f) * 0.5f;
@@ -117,21 +113,21 @@ ss::V3 get_sea_color(ss::V3 p, ss::V3 n, ss::V3 l, ss::V3 eye, ss::V3 dist)
     auto color = ss::mix(refracted, reflected, fresnel);
     const auto atten = ss::max(1.f - ss::dot(dist, dist) * 0.001f, 0.f);
     color += SEA_WATER_COLOR * (p.y - SEA_HEIGHT) * 0.18f * atten;
-    color += ss::V3{specular(n, l, eye, 60.f)}; // XXX. MAYBE SINGLE CONSTRUCTOR MAKES ALL COLORS THE SAME? MAKES SENSE SINCE LIGHT IS WHITE.
+    color += ss::V3 { specular(n, l, eye, 60.f) }; // XXX. MAYBE SINGLE CONSTRUCTOR MAKES ALL COLORS THE SAME? MAKES SENSE SINCE LIGHT IS WHITE.
     return color;
 }
 
-ss::V3 get_normal(ss::V3 p, float eps)
+inline ss::V3 get_normal(ss::V3 p, float eps)
 {
     ss::V3 n {};
     n.y = map_detailed(p);
-    n.x = map_detailed(ss::V3(p.x + eps, p.y, p.z)) - n.y;
-    n.z = map_detailed(ss::V3(p.x, p.y, p.z + eps)) - n.y;
+    n.x = map_detailed(ss::V3 { p.x + eps, p.y, p.z }) - n.y;
+    n.z = map_detailed(ss::V3 { p.x, p.y, p.z + eps }) - n.y;
     n.y = eps;
     return ss::normalize(n);
 }
 
-float height_map_tracing(ss::V3 ori, ss::V3 dir, /* OUT */ ss::V3& p)
+inline float height_map_tracing(ss::V3 ori, ss::V3 dir, /* OUT */ ss::V3& p)
 {
     auto tm = 0.f;
     auto tx = 1000.f;
@@ -159,7 +155,7 @@ float height_map_tracing(ss::V3 ori, ss::V3 dir, /* OUT */ ss::V3& p)
     return tmid;
 }
 
-ss::V3 get_pixel(ss::V2 coord, float time)
+inline ss::V3 get_pixel(ss::V2 coord, float time)
 {
     auto uv = coord / ss::res;
     uv = uv * 2.f - 1.f;

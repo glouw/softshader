@@ -1,36 +1,24 @@
 #pragma once
 
-#include <SDL2/SDL.h>
-#include <chrono>
 #include <cmath>
-#include <cstdio>
-#include <thread>
-#include <vector>
+#include <cstdint>
 
 namespace ss
 {
 
-const auto xres = 768;
-const auto yres = 432;
-
-auto time = 0.f;
-
-inline void tick()
+inline float abs(float a)
 {
-    time = SDL_GetTicks() * 0.001f;
-}
-
-inline float uptime()
-{
-    return time;
+    return std::fabs(a);
 }
 
 inline float clamp(float v, float lo, float hi)
 {
-    return v > hi ? hi : v < lo ? lo : v;
+    v = 0.5f * (v + lo + abs(v - lo));
+    v = 0.5f * (v + hi - abs(hi - v));
+    return v;
 }
 
-float smoothstep(float edge0, float edge1, float x)
+inline float smoothstep(float edge0, float edge1, float x)
 {
     float t = clamp((x - edge0) / (edge1 - edge0), 0.f, 1.f);
     return t * t * (3.f - 2.f * t);
@@ -54,8 +42,8 @@ struct V2
     {
     }
     V2(float xy)
-    : x { xy }
-    , y { xy }
+        : x { xy }
+        , y { xy }
     {
     }
     V2 operator+(V2 v) const
@@ -138,15 +126,9 @@ struct V2
         y /= v.y;
         return *this;
     }
-
     float& operator[](int i)
     {
-        return (i == 0) ? x : y;
-    }
-
-    void print() const
-    {
-        std::printf("%f %f\n", (double)x, (double)y);
+        return reinterpret_cast<float*>(this)[i];
     }
 };
 
@@ -162,20 +144,16 @@ struct M2
         , y { c, d }
     {
     }
-
     M2(V2 x, V2 y)
         : x { x }
         , y { y }
     {
     }
-
     V2& operator[](int i)
     {
-        return (i == 0) ? x : y;
+        return reinterpret_cast<V2*>(this)[i];
     }
 };
-
-const auto res = V2 { float { xres }, float { yres } };
 
 struct V3
 {
@@ -303,7 +281,7 @@ struct V3
     }
     float& operator[](int i)
     {
-        return (i == 0) ? x : (i == 1) ? y : z;
+        return reinterpret_cast<float*>(this)[i];
     }
     uint32_t color(float a) const
     {
@@ -311,10 +289,6 @@ struct V3
         return (uint8_t(clamp(a, 0.f, 1.f) * 0xFF) << 24) | (uint8_t(clamp(x, 0.f, 1.f) * 0xFF) << 16)
              | (uint8_t(clamp(y, 0.f, 1.f) * 0xFF) <<  8) | (uint8_t(clamp(z, 0.f, 1.f) * 0xFF) <<  0);
         // clang-format on
-    }
-    void print() const
-    {
-        std::printf("%f %f %f\n", (double)x, (double)y, (double)z);
     }
 };
 
@@ -327,8 +301,8 @@ struct M3
     {
     }
     M3(float a, float b, float c,
-       float d, float e, float f,
-       float g, float h, float i)
+        float d, float e, float f,
+        float g, float h, float i)
         : x { a, b, c }
         , y { d, e, f }
         , z { g, h, i }
@@ -350,7 +324,7 @@ struct M3
     }
     V3& operator[](int i)
     {
-        return (i == 0) ? x : (i == 1) ? y : z;
+        return reinterpret_cast<V3*>(this)[i];
     }
 };
 
@@ -399,11 +373,6 @@ inline float length(V2 v)
 inline float length(V3 v)
 {
     return std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-}
-
-inline float abs(float a)
-{
-    return std::fabs(a);
 }
 
 inline V2 abs(V2 v)
@@ -542,6 +511,36 @@ inline V3 mul(V3 v, M3 m)
         v.x * m.z.x + v.y * m.z.y + v.z * m.z.z,
     };
 }
+}
+
+// HEADERS INCLUDES ARE SPLIT TO NOT POLLUTE SOFTSHADER MATH LIBRARY WITH OLD CSTYLE DECLARATIONS.
+
+#include <vector>
+#include <chrono>
+#include <thread>
+#include <cstdio>
+#include <SDL2/SDL.h>
+
+namespace ss
+{
+const auto xres = 768;
+const auto yres = 432;
+
+const auto res = V2 { float { xres }, float { yres } };
+
+auto time = 0.f;
+
+inline float uptime()
+{
+    return time;
+}
+
+using Shade = uint32_t (*)(const V2);
+
+inline void tick()
+{
+    time = SDL_GetTicks() * 0.001f;
+}
 
 class Video
 {
@@ -627,8 +626,6 @@ public:
     }
 };
 
-using Shade = uint32_t (*)(const V2);
-
 struct Needle
 {
     Vram& vram;
@@ -674,7 +671,6 @@ void run(Shade shade)
 {
     auto video = Video {};
     auto vram = Vram {};
-    auto cycles = int {};
     for(auto input = Input {}; !input.done; input.update())
     {
         tick();
@@ -684,12 +680,8 @@ void run(Shade shade)
         const auto t1 = std::chrono::high_resolution_clock::now();
         vram.unlock();
         video.render();
-        if(cycles % 10 == 0)
-        {
-            std::chrono::duration<double> dt = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-            std::printf("draw fps: %f\n", 1.0 / dt.count());
-        }
-        cycles += 1;
+        std::chrono::duration<double> dt = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+        std::printf("draw fps: %f\n", 1.0 / dt.count());
     }
 }
 }
