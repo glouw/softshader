@@ -6,7 +6,7 @@ static uint32_t shade(const ss::V2 coord)
 {
     const auto per = coord / ss::res;
     auto c = ss::V3 {};
-    auto l = float {};
+    auto l = 0.f;
     auto z = ss::uptime();
     for(int i = 0; i < 3; i++)
     {
