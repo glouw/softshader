@@ -286,8 +286,8 @@ namespace ss
         uint32_t color(float a) const
         {
             // clang-format off
-        return (uint8_t(clamp(a, 0.f, 1.f) * 0xFF) << 24) | (uint8_t(clamp(x, 0.f, 1.f) * 0xFF) << 16)
-             | (uint8_t(clamp(y, 0.f, 1.f) * 0xFF) <<  8) | (uint8_t(clamp(z, 0.f, 1.f) * 0xFF) <<  0);
+            return (uint8_t(clamp(a, 0.f, 1.f) * 0xFF) << 24) | (uint8_t(clamp(x, 0.f, 1.f) * 0xFF) << 16)
+                 | (uint8_t(clamp(y, 0.f, 1.f) * 0xFF) <<  8) | (uint8_t(clamp(z, 0.f, 1.f) * 0xFF) <<  0);
             // clang-format on
         }
     };
@@ -300,9 +300,7 @@ namespace ss
         M3()
         {
         }
-        M3(float a, float b, float c,
-            float d, float e, float f,
-            float g, float h, float i)
+        M3(float a, float b, float c, float d, float e, float f, float g, float h, float i)
             : x { a, b, c }
             , y { d, e, f }
             , z { g, h, i }

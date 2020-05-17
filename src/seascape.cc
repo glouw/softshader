@@ -28,11 +28,11 @@ namespace
         const auto a2 = ss::V2 { ss::sin(ang.y), ss::cos(ang.y) };
         const auto a3 = ss::V2 { ss::sin(ang.z), ss::cos(ang.z) };
         // clang-format off
-    return ss::M3 {
-        ss::V3 {  a1.y * a3.y + a1.x * a2.x * a3.x, a1.y * a2.x * a3.x + a3.y * a1.x, -a2.y * a3.x },
-        ss::V3 { -a2.y * a1.x,                      a1.y * a2.y,                       a2.x        },
-        ss::V3 {  a3.y * a1.x * a2.x + a1.y * a3.x, a1.x * a3.x - a1.y * a3.y * a2.x,  a2.y * a3.y },
-    };
+        return ss::M3 {
+            ss::V3 {  a1.y * a3.y + a1.x * a2.x * a3.x, a1.y * a2.x * a3.x + a3.y * a1.x, -a2.y * a3.x },
+            ss::V3 { -a2.y * a1.x,                      a1.y * a2.y,                       a2.x        },
+            ss::V3 {  a3.y * a1.x * a2.x + a1.y * a3.x, a1.x * a3.x - a1.y * a3.y * a2.x,  a2.y * a3.y },
+        };
         // clang-format on
     }
 
@@ -47,9 +47,9 @@ namespace
         const auto f = ss::fract(p);
         const auto u = f * f * (f * -2.f + 3.f);
         // clang-format off
-    return -1.f + 2.f *
-        ss::mix(ss::mix(hash(i + ss::V2 { 0.f, 0.f }), hash(i + ss::V2 { 1.f, 0.f }), u.x),
-                ss::mix(hash(i + ss::V2 { 0.f, 1.f }), hash(i + ss::V2 { 1.f, 1.f }), u.x), u.y);
+        return -1.f + 2.f *
+            ss::mix(ss::mix(hash(i + ss::V2 { 0.f, 0.f }), hash(i + ss::V2 { 1.f, 0.f }), u.x),
+                    ss::mix(hash(i + ss::V2 { 0.f, 1.f }), hash(i + ss::V2 { 1.f, 1.f }), u.x), u.y);
         // clang-format on
     }
 
