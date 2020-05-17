@@ -16,3 +16,4 @@ all: ../tunnel ../creation ../seascape
 clean:
 	rm ../tunnel
 	rm ../creation
+	rm ../seascape
